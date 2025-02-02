@@ -8,7 +8,6 @@ public static class SToolLoggingExtension
 {
     public static ILoggingBuilder AddSToolLogger(this ILoggingBuilder builder, Action<SToolLoggerSettings> configureLogger)
     {
-
         SToolLoggerSettings settings = new();
         configureLogger(settings);
 
