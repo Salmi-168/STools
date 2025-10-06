@@ -1,6 +1,4 @@
-﻿using System.Runtime.Versioning;
-
-namespace Salmi.Logging.Logger;
+﻿namespace Salmi.Logging;
 
 [Flags]
 public enum SToolLoggerType

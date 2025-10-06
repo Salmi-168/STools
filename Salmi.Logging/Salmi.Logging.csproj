@@ -4,25 +4,47 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <OutputType>Library</OutputType>
+        <PublishAot>true</PublishAot>
+        <EnableAotCompatibilityAnalyzers>true</EnableAotCompatibilityAnalyzers>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>Salmi.Logging</PackageId>
         <IncludeSymbols>true</IncludeSymbols>
+        <IncludeSource>true</IncludeSource>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <Version>0.0.1</Version>
+        <AssemblyVersion>0.1.1.0</AssemblyVersion>
+        <VersionPrefix>0.1.0</VersionPrefix>
+        <VersionSuffix>beta</VersionSuffix>
         <Title>Salmi.Logging</Title>
         <Authors>Salmi</Authors>
-        <Description>Salmi Logging Tools</Description>
-        <AssemblyVersion>0.0.0.1</AssemblyVersion>
-        <FileVersion>0.0.0.1</FileVersion>
+        <Description>.Net Logging Tool, which supports several different storage locations for logging</Description>
+        <Copyright>Copyright © Salmi-168 2025</Copyright>
+        <RepositoryUrl>https://github.com/Salmi-168/STools</RepositoryUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageTags>.NET;Logging</PackageTags>
+        <PackageIcon>PackageIcon.png</PackageIcon>
+        <PackageProjectUrl>https://github.com/Salmi-168/STools</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryType>git</RepositoryType>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.1" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.1" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
-        <PackageReference Include="Pastel" Version="6.0.1" />
-        <PackageReference Include="System.Diagnostics.EventLog" Version="9.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.*" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.*" />
+        <PackageReference Include="Pastel" Version="7.0.0" />
+        <PackageReference Include="System.Diagnostics.EventLog" Version="9.*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\PackageIcon.png" Pack="true" PackagePath="\" />
+        <None Include="..\LICENSE.md" Pack="true" PackagePath="\" />
+        <None Include="README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>

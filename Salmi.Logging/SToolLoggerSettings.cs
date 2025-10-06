@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Salmi.Logging.Logger.Pipes;
 
-namespace Salmi.Logging.Logger;
+namespace Salmi.Logging;
 
 public class SToolLoggerSettings
 {
@@ -12,10 +12,10 @@ public class SToolLoggerSettings
 	public string LogFilePath { get; set; } = (Process.GetCurrentProcess().MainModule?.FileName[..^4] ?? $"Unnamed-Log-{DateTime.Now:dd:MM:yyyy_HH:mm:ss:}") + ".log";
 
 	/// <summary>
-	/// Configure the pipe settings for the logger.<br/>
-	/// (Pipes are Windows only)<br/>
+	/// Configure the pipe settings for the logger. (Pipes are Windows only)<br/>
 	/// Use <see cref="OperatingSystem.IsWindows()"/> to check if the current OS is Windows and remove the warnings.
 	/// </summary>
+	[SupportedOSPlatform("Windows")]
 	public PipeSettings? PipeSettings { get; set; }
 
 	/// <summary>
@@ -24,7 +24,7 @@ public class SToolLoggerSettings
 	/// </summary>
 	[SupportedOSPlatform("Windows")]
 	[MemberNotNullWhen(true, nameof(PipeSettings))]
-	public bool HasPipeConfig() => PipeSettings != null;
+	public bool HasPipeConfig() => PipeSettings is not null;
 
 	/// <summary>
 	/// Use <see cref="OperatingSystem.IsWindows()"/> to check if the current OS is Windows and remove the warnings.
@@ -37,5 +37,5 @@ public class SToolLoggerSettings
 	/// </summary>
 	[SupportedOSPlatform("Windows")]
 	[MemberNotNullWhen(true, nameof(EventLogSource))]
-	public bool HasEventLogConfig() => EventLogSource != null;
+	public bool HasEventLogConfig() => EventLogSource is not null;
 }

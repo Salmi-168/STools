@@ -3,30 +3,28 @@ using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
-using Pastel;
 using Salmi.Logging.Helper;
-using Salmi.Logging.Logger.Pipes;
 
 namespace Salmi.Logging.Logger;
 
 internal class SToolLogger : ILogger, IDisposable
 {
-    public string Name { get; }
+    internal string Name { get; }
 
     private readonly SToolLoggerSettings _settings;
     private readonly Task? _fileTask;
     private readonly Task? _pipeTask;
 
-    public SToolLogger(string name, SToolLoggerSettings settings)
+    internal SToolLogger(string name, SToolLoggerSettings settings)
     {
         Name = name;
         _settings = settings;
 
         if (_settings.SToolLoggerType.HasFlag(SToolLoggerType.File))
-            _fileTask = Task.Run(() => ProcessLogQueue(settings.LogFilePath));
+            _fileTask = Task.Run(ProcessLogQueue);
 
         if (OperatingSystem.IsWindows() && _settings.SToolLoggerType.HasFlag(SToolLoggerType.Pipes) && _settings.HasPipeConfig())
-            _pipeTask = Task.Run(() => ProcessPipeQueue(settings.PipeSettings));
+            _pipeTask = Task.Run(ProcessPipeQueue);
     }
 
     private static readonly ConcurrentQueue<string> FileQueue = [];
@@ -47,10 +45,10 @@ internal class SToolLogger : ILogger, IDisposable
         if (!IsEnabled(logLevel))
             return;
 
-        string logMessage = $"[{DateTime.Now:HH:mm:ss HH:mm:ss}]";
-        string name = $"[{Name}]".SetLength(30);
-        string unFormatedMessage = logMessage + " " + $"[{logLevel}]".SetLength(13) + $" {name} - {formatter(state, exception)}";
-        string consoleMessage = logMessage + " " + $"[{logLevel.ToString().SetLength(11).ToColorCodedConsoleString(logLevel)}]" + $" {name} - {formatter(state, exception).Pastel(logLevel.ToColor())}";
+        string dateTime = $"[{DateTime.Now:HH:mm:ss HH:mm:ss}]";
+        string name = $"[{Name, 30}]";
+        string unFormatedMessage = dateTime + " " + $"[{logLevel, 11}]" + $" {name} - {formatter(state, exception)}";
+        string consoleMessage = dateTime + " " + $"[{logLevel.ToColorCodedConsoleString(true)}]" + $" {name} - {formatter(state, exception).ToColorCodedConsoleString(logLevel)}";
 
         if (_settings.SToolLoggerType.HasFlag(SToolLoggerType.Console))
         {
@@ -81,17 +79,14 @@ internal class SToolLogger : ILogger, IDisposable
     [SupportedOSPlatform("windows")]
     private static EventLogEntryType GetEntryType(LogLevel logLevel) => logLevel switch
     {
-        LogLevel.Trace => EventLogEntryType.Information,
-        LogLevel.Debug => EventLogEntryType.Information,
-        LogLevel.Information => EventLogEntryType.Information,
+        LogLevel.Trace or LogLevel.Debug or LogLevel.Information => EventLogEntryType.Information,
         LogLevel.Warning => EventLogEntryType.Warning,
-        LogLevel.Error => EventLogEntryType.Error,
-        LogLevel.Critical => EventLogEntryType.Error,
+        LogLevel.Error or LogLevel.Critical => EventLogEntryType.Error,
         LogLevel.None => EventLogEntryType.Information,
         _ => throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null)
     };
 
-    private static async Task ProcessLogQueue(string logFilePath)
+    private async Task ProcessLogQueue()
     {
         while (true)
         {
@@ -99,17 +94,18 @@ internal class SToolLogger : ILogger, IDisposable
 
             while (FileQueue.TryDequeue(out string? log))
             {
-                await File.AppendAllTextAsync(logFilePath, log).ConfigureAwait(false);
+                await File.AppendAllTextAsync(_settings.LogFilePath, log).ConfigureAwait(false);
             }
         }
         // ReSharper disable once FunctionNeverReturns
     }
 
-    private static async Task ProcessPipeQueue(PipeSettings? pipeSettings)
+    private async Task ProcessPipeQueue()
     {
-        ArgumentNullException.ThrowIfNull(pipeSettings, nameof(pipeSettings));
+        if (!OperatingSystem.IsWindows() || _settings.PipeSettings is null)
+            throw new InvalidOperationException("Pipe settings have not been set");
 
-        await using NamedPipeClientStream pipeClient = new(pipeSettings.Value.ServerName, pipeSettings.Value.PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
+        await using NamedPipeClientStream pipeClient = new(_settings.PipeSettings.ServerName, _settings.PipeSettings.PipeName, PipeDirection.Out, PipeOptions.Asynchronous);
         await pipeClient.ConnectAsync().ConfigureAwait(false);
         await using StreamWriter writer = new(pipeClient);
 

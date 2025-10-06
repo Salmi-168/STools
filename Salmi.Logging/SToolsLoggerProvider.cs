@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using Salmi.Logging.Extensions;
+using Salmi.Logging.Logger;
 
-namespace Salmi.Logging.Logger;
+namespace Salmi.Logging;
 
 public class SToolsLoggerProvider(SToolLoggerSettings settings) : ILoggerProvider
 {

@@ -1,21 +1,19 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Salmi.Logging.Logger;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Salmi.Logging.Extensions;
 
 public static class SToolLoggingExtension
 {
-    public static ILoggingBuilder AddSToolLogger(this ILoggingBuilder builder, Action<SToolLoggerSettings> configureLogger)
+    public static ILoggingBuilder AddSToolLogger(this ILoggingBuilder loggingBuilder, Action<SToolLoggerSettings> configureLogger)
     {
         SToolLoggerSettings settings = new();
         configureLogger(settings);
 
         if (settings.SToolLoggerType == SToolLoggerType.None)
-            return builder;
+            return loggingBuilder;
 
-        builder.AddProvider(new SToolsLoggerProvider(settings));
+        loggingBuilder.AddProvider(new SToolsLoggerProvider(settings));
 
-        return builder;
+        return loggingBuilder;
     }
 }
