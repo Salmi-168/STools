@@ -9,7 +9,18 @@ public class SToolLoggerSettings
 {
 	public SToolLoggerType SToolLoggerType;
 
+	internal bool LogToConsoleEnabled => SToolLoggerType.HasFlag(SToolLoggerType.Console);
+	internal bool LogToFileEnabled => SToolLoggerType.HasFlag(SToolLoggerType.File);
+	internal bool LogToEventLogEnabled => SToolLoggerType.HasFlag(SToolLoggerType.EventLog);
+	internal bool LogToPipesEnabled => SToolLoggerType.HasFlag(SToolLoggerType.Pipes);
+
 	public string LogFilePath { get; set; } = (Process.GetCurrentProcess().MainModule?.FileName[..^4] ?? $"Unnamed-Log-{DateTime.Now:dd:MM:yyyy_HH:mm:ss:}") + ".log";
+
+	/// <summary>
+	/// When false the message is not colored. (Also in pipes.)<br/>
+	/// Default is true.
+	/// </summary>
+	public bool ColoredConsoleOutput { get; set; } = true;
 
 	/// <summary>
 	/// Configure the pipe settings for the logger. (Pipes are Windows only)<br/>

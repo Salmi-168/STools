@@ -20,10 +20,10 @@ internal class SToolLogger : ILogger, IDisposable
         Name = name;
         _settings = settings;
 
-        if (_settings.SToolLoggerType.HasFlag(SToolLoggerType.File))
+        if (_settings.LogToFileEnabled)
             _fileTask = Task.Run(ProcessLogQueue);
 
-        if (OperatingSystem.IsWindows() && _settings.SToolLoggerType.HasFlag(SToolLoggerType.Pipes) && _settings.HasPipeConfig())
+        if (OperatingSystem.IsWindows() && _settings.LogToPipesEnabled && _settings.HasPipeConfig())
             _pipeTask = Task.Run(ProcessPipeQueue);
     }
 
@@ -47,15 +47,16 @@ internal class SToolLogger : ILogger, IDisposable
 
         string dateTime = $"[{DateTime.Now:HH:mm:ss HH:mm:ss}]";
         string name = $"[{Name, 30}]";
-        string unFormatedMessage = dateTime + " " + $"[{logLevel, 11}]" + $" {name} - {formatter(state, exception)}";
-        string consoleMessage = dateTime + " " + $"[{logLevel.ToColorCodedConsoleString(true)}]" + $" {name} - {formatter(state, exception).ToColorCodedConsoleString(logLevel)}";
+        string exceptionText = (exception is not null ? Environment.NewLine + exception : string.Empty) + (exception?.InnerException is not null ? Environment.NewLine + exception.InnerException : string.Empty);
+        string unFormatedMessage = dateTime + " " + $"[{logLevel, 11}]" + $" {name} - {state + exceptionText}";
+        string consoleMessage = dateTime + " " + $"[{logLevel.ToColorCodedConsoleString(true)}]" + $" {name} - {(state + exceptionText).ToColorCodedConsoleString(logLevel)}";
 
-        if (_settings.SToolLoggerType.HasFlag(SToolLoggerType.Console))
+        if (_settings.LogToConsoleEnabled)
         {
-            Console.WriteLine(consoleMessage);
+            Console.WriteLine(_settings.ColoredConsoleOutput ? consoleMessage : unFormatedMessage);
         }
 
-        if (_settings.SToolLoggerType.HasFlag(SToolLoggerType.File))
+        if (_settings.LogToFileEnabled)
         {
             FileQueue.Enqueue(unFormatedMessage + Environment.NewLine);
             FileQueueSignal.Set();
@@ -64,13 +65,13 @@ internal class SToolLogger : ILogger, IDisposable
         if (!OperatingSystem.IsWindows())
             return;
 
-        if (_settings.SToolLoggerType.HasFlag(SToolLoggerType.Pipes) && _settings.PipeSettings is { UsePipeLogging: true } && _settings.HasPipeConfig())
+        if (_settings is { LogToPipesEnabled: true, PipeSettings.UsePipeLogging: true } && _settings.HasPipeConfig())
         {
-            PipeQueue.Enqueue(consoleMessage);
+            PipeQueue.Enqueue(_settings.ColoredConsoleOutput ? consoleMessage : unFormatedMessage);
             PipeQueueSignal.Set();
         }
 
-        if (_settings.SToolLoggerType.HasFlag(SToolLoggerType.EventLog) && _settings.HasEventLogConfig() && EventLog.SourceExists(_settings.EventLogSource))
+        if (_settings.LogToEventLogEnabled && _settings.HasEventLogConfig() && EventLog.SourceExists(_settings.EventLogSource))
         {
             EventLog.WriteEntry(_settings.EventLogSource, unFormatedMessage, GetEntryType(logLevel));
         }
